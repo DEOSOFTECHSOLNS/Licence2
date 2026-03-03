@@ -18,12 +18,18 @@ const saveDb = (db) => fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
 app.use(cors());
 app.use(express.json());
 
-// 1. PING (Check if server is alive)
+// Global Header for all API responses
+app.use('/api', (req, res, next) => {
+    res.setHeader('X-License-Server', 'DEOSOFT-V1');
+    next();
+});
+
+// 1. PING
 app.get('/api/ping', (req, res) => {
     res.json({ status: 'online', message: 'DeoSoft License Server is Online' });
 });
 
-// 2. ACTIVATE (Used by the App)
+// 2. ACTIVATE
 app.post('/api/activate', (req, res) => {
     let { licenseKey, deviceId } = req.body;
     const db = getDb();
@@ -34,12 +40,10 @@ app.post('/api/activate', (req, res) => {
 
     const license = db.keys[licenseKey];
 
-    // Check if key is already bound to another device
     if (license.deviceId && license.deviceId !== deviceId) {
         return res.status(403).json({ success: false, message: 'Key Already Used' });
     }
 
-    // If first time use, bind it
     if (!license.deviceId) {
         license.deviceId = deviceId;
         license.activatedAt = Date.now();
@@ -54,46 +58,48 @@ app.post('/api/activate', (req, res) => {
     });
 });
 
-// 3. ADMIN: ADD NEW KEY (Use from Termux)
+// 3. ADMIN: ADD KEY
 app.post('/api/admin/add-key', (req, res) => {
     const adminKey = req.headers['admin-key'];
     if (adminKey !== 'DEOSOFT_ADMIN_SECRET') {
         return res.status(401).json({ error: 'Unauthorized' });
     }
-
     const { key } = req.body;
-    if (!key) return res.status(400).json({ error: 'Key is required' });
-
     const db = getDb();
     if (db.keys[key]) return res.status(409).json({ error: 'Key already exists' });
 
-    db.keys[key] = {
-        deviceId: null,
-        activatedAt: null,
-        expiresAt: null
-    };
+    db.keys[key] = { deviceId: null, activatedAt: null, expiresAt: null };
     saveDb(db);
     res.json({ success: true, message: `Key ${key} added successfully` });
 });
 
-// 4. ADMIN: RESET KEY (Use from Termux to clear device binding)
+// 4. ADMIN: RESET KEY
 app.post('/api/admin/reset-key', (req, res) => {
     const adminKey = req.headers['admin-key'];
     if (adminKey !== 'DEOSOFT_ADMIN_SECRET') {
         return res.status(401).json({ error: 'Unauthorized' });
     }
-
     const { key } = req.body;
     const db = getDb();
     if (db.keys[key]) {
-        db.keys[key].deviceId = null; // Clear the device binding
+        db.keys[key].deviceId = null;
         saveDb(db);
         return res.json({ success: true, message: `Key ${key} has been reset.` });
     }
     res.status(404).json({ error: 'Key not found' });
 });
 
-// 5. ADMIN: LIST ALL KEYS
+// 5. ADMIN: DELETE ALL KEYS (The New Feature)
+app.post('/api/admin/delete-all-keys', (req, res) => {
+    const adminKey = req.headers['admin-key'];
+    if (adminKey !== 'DEOSOFT_ADMIN_SECRET') {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    saveDb({ keys: {} });
+    res.json({ success: true, message: 'All keys deleted successfully' });
+});
+
+// 6. ADMIN: LIST ALL KEYS
 app.get('/api/keys', (req, res) => {
     const adminKey = req.headers['admin-key'];
     if (adminKey !== 'DEOSOFT_ADMIN_SECRET') {

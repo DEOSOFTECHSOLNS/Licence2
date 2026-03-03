@@ -7,47 +7,39 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DB_FILE = path.join(__dirname, 'licenses.json');
 
-app.use(cors());
-app.use(express.json());
-
-// Initialize Database with your test key
+// Initialize Database if missing
 if (!fs.existsSync(DB_FILE)) {
-    const initialData = {
-        keys: {
-            "DEO-DUBTIU0G": { deviceId: null, activatedAt: null, expiresAt: null },
-            "DEO-0KE1XXGI": { deviceId: null, activatedAt: null, expiresAt: null }
-        }
-    };
-    fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2));
+    fs.writeFileSync(DB_FILE, JSON.stringify({ keys: {} }));
 }
 
 const getDb = () => JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
 const saveDb = (db) => fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
 
-app.get('/', (req, res) => {
-    res.send('<h1>License Server is ONLINE</h1>');
+app.use(cors());
+app.use(express.json());
+
+// 1. PUBLIC PING (To check if server is alive)
+app.get('/api/ping', (req, res) => {
+    res.json({ status: 'online', message: 'DeoSoft License Server is Online' });
 });
 
+// 2. ACTIVATE ROUTE (Used by the App)
 app.post('/api/activate', (req, res) => {
-    // This header tells the app "I am the real server"
-    res.setHeader('X-License-Server', 'DEOSOFT-V1');
-    
     let { licenseKey, deviceId } = req.body;
-    licenseKey = licenseKey?.trim();
-    deviceId = deviceId?.trim();
-
-    console.log(`Activation attempt: ${licenseKey} for device ${deviceId}`);
-
     const db = getDb();
+
     if (!licenseKey || !db.keys[licenseKey]) {
         return res.status(404).json({ success: false, message: 'Invalid License Key' });
     }
 
     const license = db.keys[licenseKey];
+
+    // Check if key is already bound to another device
     if (license.deviceId && license.deviceId !== deviceId) {
-        return res.status(403).json({ success: false, message: 'Key already used' });
+        return res.status(403).json({ success: false, message: 'Key already used on another device' });
     }
 
+    // If first time use, bind it
     if (!license.deviceId) {
         license.deviceId = deviceId;
         license.activatedAt = Date.now();
@@ -55,7 +47,42 @@ app.post('/api/activate', (req, res) => {
         saveDb(db);
     }
 
-    res.json({ success: true, expiresAt: license.expiresAt });
+    res.json({ 
+        success: true, 
+        expiresAt: license.expiresAt,
+        message: 'Activation Successful'
+    });
+});
+
+// 3. ADMIN: ADD NEW KEY (Use this from Termux)
+app.post('/api/admin/add-key', (req, res) => {
+    const adminKey = req.headers['admin-key'];
+    if (adminKey !== 'DEOSOFT_ADMIN_SECRET') {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { key } = req.body;
+    if (!key) return res.status(400).json({ error: 'Key is required' });
+
+    const db = getDb();
+    if (db.keys[key]) return res.status(409).json({ error: 'Key already exists' });
+
+    db.keys[key] = {
+        deviceId: null,
+        activatedAt: null,
+        expiresAt: null
+    };
+    saveDb(db);
+    res.json({ success: true, message: `Key ${key} added successfully` });
+});
+
+// 4. ADMIN: LIST ALL KEYS
+app.get('/api/keys', (req, res) => {
+    const adminKey = req.headers['admin-key'];
+    if (adminKey !== 'DEOSOFT_ADMIN_SECRET') {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    res.json(getDb().keys);
 });
 
 app.listen(PORT, '0.0.0.0', () => {

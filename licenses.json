@@ -1,15 +1,11 @@
 {
   "status": "active",
-  "is_blocked": "false",
   "keys": [
-    { "key": "ds67", "blocked": "false", "expires_at": "2027-01-01" },
-    { "key": "ds98.", "blocked": "false", "expires_at": "2027-01-01" },
-    { "key": "ds2397", "blocked": "false", "expires_at": "2027-01-01" },
-    { "key": "ds654", "blocked": "false", "expires_at": "2027-01-01" },
-    { "key": "ds234", "blocked": "false", "expires_at": "2027-01-01" },
-    { "key": "ds675", "blocked": "false", "expires_at": "2027-01-01" },
-    { "key": "ds.44", "blocked": "false", "expires_at": "2027-01-01" },
-    { "key": "ds.m34", "blocked": "false", "expires_at": "2027-01-01" },
-    { "key": "ds.d45", "blocked": "false", "expires_at": "2027-01-01" }
+    { 
+      "key": "ds67", 
+      "blocked": "false", 
+      "dev": "", 
+      "expires_at": "2027-01-01" 
+    }
   ]
 }

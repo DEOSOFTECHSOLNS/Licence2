@@ -59,3 +59,21 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Pearlpix Server is listening on port ${PORT}`);
 });
+// Add this route to your server.js (I will update it for you now)
+app.post('/update', async (req, res) => {
+    const { key, dev } = req.body;
+    try {
+        const docRef = doc(db, "licenses", key);
+        const expiry = Date.now() + (30 * 24 * 60 * 60 * 1000); // 30 Days from now
+        
+        await updateDoc(docRef, {
+            dev: dev,
+            expires_at: expiry
+        });
+        
+        console.log(`Captured Device: ${dev} for Key: ${key}`);
+        res.json({ status: "success", expires_at: expiry });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});

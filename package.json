@@ -1,12 +1,13 @@
 {
-  "name": "license-server",
+  "name": "pearlpix-server",
   "version": "1.0.0",
+  "description": "Pearlpix Firebase License Server",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "cors": "^2.8.5"
+    "firebase": "^10.7.1"
   }
 }

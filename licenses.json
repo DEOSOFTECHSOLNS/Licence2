@@ -1,11 +1,8 @@
 {
   "status": "active",
   "keys": [
-    { 
-      "key": "ds67", 
-      "blocked": "false", 
-      "dev": "", 
-      "expires_at": "2027-01-01" 
-    }
+    { "key": "ds67", "blocked": "false", "dev": "", "expires_at": "2027-01-01" },
+    { "key": "pearl123", "blocked": "false", "dev": "", "expires_at": "2026-06-01" },
+    { "key": "vip99", "blocked": "false", "dev": "", "expires_at": "2026-12-31" }
   ]
 }

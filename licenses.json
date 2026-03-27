@@ -1,18 +1,14 @@
-{
-  "keys": [
+[
     {
-      "key": "ABC123",
-      "dev": "5550b671be08565b",
-      "expiry": "2026-12-31"
+        "device_id": "device123",
+        "key": "key12345",
+        "expirydate": "31-12-2025",
+        "Allowoffline": true
     },
     {
-      "key": "DEVICELOCK1",
-      "dev": "YOUR_DEVICE_ID_HERE",
-      "expiry": "2026-12-31"
-    },
-    {
-      "key": "LIFETIME999",
-      "dev": ""
+        "device_id": "device456",
+        "key": "key67890",
+        "expirydate": "15-06-2025",
+        "Allowoffline": false
     }
-  ]
-}
+]

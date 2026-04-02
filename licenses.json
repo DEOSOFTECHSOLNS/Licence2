@@ -6,10 +6,10 @@
     "expiry": "2026-4-29" // DATE FORMAT~ YYYY-MM-DD
   },
   {
-    "Device Id": "",  // NO DEVICE ID, LOGIN NOT WORK 
-    "username": "abc",
-    "password": "101",
-    "expiry": "2026-09-29"
+    "Device Id": "bb6d53c86bc1d334",  // NO DEVICE ID, LOGIN NOT WORK 
+    "username": "BOMBOCA",
+    "password": "9090",
+    "expiry": "2026-05-03"
   },
   {
     "Device Id": "PASTE-DEVICE-ID",
